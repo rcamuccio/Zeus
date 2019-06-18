@@ -9,6 +9,7 @@
 # Zeus - Current status monitor
 #
 
+from colored import  fg, bg, attr
 import datetime
 import os
 import pyowm
@@ -38,9 +39,9 @@ while run == True:
 
 	owm = pyowm.OWM(api_key)
 
-	print("Sending query ...")
+	print("Sending weather query ...")
 	obs = owm.weather_at_coords(latitude, longitude)
-	print("Query received!")
+	print("Weather query received!")
 	print()
 
 	reception_time = obs.get_reception_time(timeformat="date")
@@ -128,10 +129,6 @@ while run == True:
 	print("Direction:", wind["deg"], "deg")
 	print()
 
-	visibility = weather.get_visibility_distance()
-	print("Visibility:", visibility)
-	print()
-
 	humidity = weather.get_humidity()
 	print("Humidity:", humidity, "%")
 	print()
@@ -139,6 +136,57 @@ while run == True:
 	pressure = weather.get_pressure()
 	print("Pressure:", pressure["press"], "hPa")
 	print()
+
+	visibility = weather.get_visibility_distance()
+	print("Visibility:", visibility)
+
+	print()
+	print("+--------------------------------------------------+")
+	print()
+
+	print("Sending UVI query ...")
+	uvi = owm.uvindex_around_coords(latitude, longitude)
+	print("UVI query received!")
+	print()
+
+	uvi_reception_time = uvi.get_reception_time(timeformat="date")
+	print("UVI reception time:", uvi_reception_time, "UTC")
+	print()
+
+	uvi_reference_time = uvi.get_reference_time(timeformat="date")
+	print("UVI reference time:", uvi_reference_time, "UTC")
+	print()
+
+	uvi_value = uvi.get_value()
+	print("UV index:", uvi_value)
+
+	uvi_exposure_risk = uvi.get_exposure_risk()
+
+	reset = attr("reset")
+
+	if uvi_exposure_risk == "green":
+		print("UV exposure risk:", fg("green") + uvi_exposure_risk + reset)
+		print()
+
+	elif uvi_exposure_risk == "yellow":
+		print("UV exposure risk:", fg("yellow") + uvi_exposure_risk + reset)
+		print()
+
+	elif uvi_exposure_risk == "orange":
+		print("UV exposure risk:", fg("orange") + uvi_exposure_risk + reset)
+		print()
+
+	elif uvi_exposure_risk == "red":
+		print("UV exposure risk:", fg("red") + uvi_exposure_risk + reset)
+		print()
+
+	elif uvi_exposure_risk == "extreme":
+		print("UV exposure risk:", fg("violet") + uvi_exposure_risk + reset)
+		print()
+
+	else:
+		print("UV exposure risk:", uvi_exposure_risk)
+		print()
 
 	print("Pausing for one minute ...")
 	time.sleep(60)
