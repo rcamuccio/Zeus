@@ -2,191 +2,194 @@
 # -*- coding: utf-8 -*-
 #
 # Richard Camuccio
-# 16 Jun 2019
+# 28 Mar 2020
 #
-# Last update: 18 Jun 2019
+# Last update: 29 Mar 2020
 #
 # Zeus - Current status monitor
 #
 
-from colored import  fg, bg, attr
-import datetime
+from datetime import datetime
+from dateutil import tz
+import json
 import os
-import pyowm
+import requests
 import time
+import xml.etree.ElementTree as ET
 
-api_key = "user-api-key"
+url_nws = "https://forecast.weather.gov/MapClick.php?lat=25.9931&lon=-97.5607&FcstType=digitalDWML"
+url_sunset = "https://api.sunrise-sunset.org/json?lat=25.9931&lng=-97.5607&formatted=0"
 
-daylight_savings = True
-
-if daylight_savings == True:
-	delta_time = datetime.timedelta(hours=5)
-else:
-	delta_time = datetime.timedelta(hours=6)
-
-latitude = 25.995784
-longitude = -97.568957
+from_zone = tz.tzutc()
+to_zone = tz.tzlocal()
 
 run = True
 while run == True:
 
 	os.system("clear")
-
-	print("+--------------------------+")
 	print(" CTMO ZEUS Weather System")
 	print(" Current Status")
-	print("+--------------------------+")
+	print("------------------------------------------------------------")
+	print(" Querying URL:", url_nws)
+	response_nws = requests.get(url=url_nws)
+	print(" Response status code:", response_nws.status_code)
+	print(" Response content type:", response_nws.headers["content-type"])
+	print(" Response encoding:", response_nws.encoding)
+	print("------------------------------------------------------------")
+	print(" Querying URL:", url_sunset)
+	response_sunset = requests.get(url=url_sunset)
+	print(" Response status code:", response_sunset.status_code)
+	print(" Response content type:", response_sunset.headers["content-type"])
+	print(" Response encoding:", response_sunset.encoding)
+	print("------------------------------------------------------------")
 
-	owm = pyowm.OWM(api_key)
+	xml_content = response_nws.content
+	root = ET.fromstring(xml_content)
 
-	print("Sending weather query ...")
-	obs = owm.weather_at_coords(latitude, longitude)
-	print("Weather query received!")
+	element_creation_date = root[0][0][0]
+	element_data = root[1]
+	element_point = root[1][0][1]
+	element_area = root[1][0][2]
+	element_height = root[1][0][3]
+	element_time_layout = root[1][2]
+	element_dew_point = root[1][3][0]
+	element_heat_index = root[1][3][1]
+	element_wind_speed = root[1][3][2]
+	element_cloud_amount = root[1][3][3]
+	element_precipitation = root[1][3][4]
+	element_humidity = root[1][3][5]
+	element_wind_direction = root[1][3][6]
+	element_temperature = root[1][3][7]
+	element_gust = root[1][3][8]
+	element_hourly_qpf = root[1][3][9]
+	element_conditions = root[1][3][10]
+
+	latitude = element_point.attrib["latitude"]
+	longitude = element_point.attrib["longitude"]
+	print(" Point:", (float(latitude), float(longitude)), "at", element_area.text)
+	print(" Mean sea level:", element_height.text, "ft")
+
+	print("------------------------------------------------------------")
+
+	time_start_str = element_time_layout[1].text
+	time_start_datetime = datetime.strptime(time_start_str, "%Y-%m-%dT%H:%M:%S-05:00")
+	print(" Reference date:", str(time_start_datetime) + "-05:00")
+
+	parse_response_sunset = json.loads(response_sunset.text)
+
+	astronomical_twilight_begin_str = parse_response_sunset["results"]["astronomical_twilight_begin"]
+	astronomical_twilight_begin_datetime = datetime.strptime(astronomical_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	astronomical_twilight_begin_datetime_utc = astronomical_twilight_begin_datetime.replace(tzinfo=from_zone)
+	astronomical_twilight_begin_datetime_local = astronomical_twilight_begin_datetime_utc.astimezone(to_zone)
+	print("   Begin astronomical twilight:", astronomical_twilight_begin_datetime_local)
+
+	nautical_twilight_begin_str = parse_response_sunset["results"]["nautical_twilight_begin"]
+	nautical_twilight_begin_datetime = datetime.strptime(nautical_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	nautical_twilight_begin_datetime_utc = nautical_twilight_begin_datetime.replace(tzinfo=from_zone)
+	nautical_twilight_begin_datetime_local = nautical_twilight_begin_datetime_utc.astimezone(to_zone)
+	print("   Begin nautical twilight:", nautical_twilight_begin_datetime_local)
+
+	civil_twilight_begin_str = parse_response_sunset["results"]["civil_twilight_begin"]
+	civil_twilight_begin_datetime = datetime.strptime(civil_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	civil_twilight_begin_datetime_utc = civil_twilight_begin_datetime.replace(tzinfo=from_zone)
+	civil_twilight_begin_datetime_local = civil_twilight_begin_datetime_utc.astimezone(to_zone)
+	print("   Begin civil twilight:", civil_twilight_begin_datetime_local)
+
+	sunrise_str = parse_response_sunset["results"]["sunrise"]
+	sunrise_datetime = datetime.strptime(sunrise_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	sunrise_datetime_utc = sunrise_datetime.replace(tzinfo=from_zone)
+	sunrise_datetime_local = sunrise_datetime_utc.astimezone(to_zone)
+	print(" Sunrise:", sunrise_datetime_local)
+
+	solar_noon_str = parse_response_sunset["results"]["solar_noon"]
+	solar_noon_datetime = datetime.strptime(solar_noon_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	solar_noon_datetime_utc = solar_noon_datetime.replace(tzinfo=from_zone)
+	solar_noon_datetime_local = solar_noon_datetime_utc.astimezone(to_zone)
+	print(" Solar noon:", solar_noon_datetime_local)
+
+	sunset_str = parse_response_sunset["results"]["sunset"]
+	sunset_datetime = datetime.strptime(sunset_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	sunset_datetime_utc = sunset_datetime.replace(tzinfo=from_zone)
+	sunset_datetime_local = sunset_datetime_utc.astimezone(to_zone)
+	print(" Sunset:", sunset_datetime_local)
+
+	civil_twilight_end_str = parse_response_sunset["results"]["civil_twilight_end"]
+	civil_twilight_end_datetime = datetime.strptime(civil_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	civil_twilight_end_datetime_utc = civil_twilight_end_datetime.replace(tzinfo=from_zone)
+	civil_twilight_end_datetime_local = civil_twilight_end_datetime_utc.astimezone(to_zone)
+	print("   End civil twilight:", civil_twilight_end_datetime_local)
+
+	nautical_twilight_end_str = parse_response_sunset["results"]["nautical_twilight_end"]
+	nautical_twilight_end_datetime = datetime.strptime(nautical_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	nautical_twilight_end_datetime_utc = nautical_twilight_end_datetime.replace(tzinfo=from_zone)
+	nautical_twilight_end_datetime_local = nautical_twilight_end_datetime_utc.astimezone(to_zone)
+	print("   End nautical twilight:", nautical_twilight_end_datetime_local)
+
+	astronomical_twilight_end_str = parse_response_sunset["results"]["astronomical_twilight_end"]
+	astronomical_twilight_end_datetime = datetime.strptime(astronomical_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
+	astronomical_twilight_end_datetime_utc = astronomical_twilight_end_datetime.replace(tzinfo=from_zone)
+	astronomical_twilight_end_datetime_local = astronomical_twilight_end_datetime_utc.astimezone(to_zone)
+	print("   End astronomical twilight:", astronomical_twilight_end_datetime_local)
+
+	print("------------------------------------------------------------")
+
+	temperature = element_temperature[0].text
+	temperature = int(temperature)
+	print(" Temperature:", temperature, "F")
+
+	dew_point = element_dew_point[0].text
+	print(" Dew point:", dew_point, "F")
+
+	heat_index = element_heat_index[0].text
+	if heat_index == "None":
+		heat_index = 0
+	print(" Heat index:", heat_index, "F")
+
+	print("------------------------------------------------------------")
+
+	wind_speed = element_wind_speed[0].text
+	print(" Wind speed:", wind_speed, "mph")
+
+	wind_direction = element_wind_direction[0].text
+	print(" Wind direction:", wind_direction, "deg")
+
+	gust = element_gust[0].text
+	if gust == None:
+		gust = 0
+	print(" Gust:", gust, "mph")
+
+	print("------------------------------------------------------------")
+
+	humidity = element_humidity[0].text
+	print(" Humidity:", str(humidity) + "%")
+
+	cloud_amount = element_cloud_amount[0].text
+	print(" Cloud amount:", str(cloud_amount) + "%")
+
+	precipitation = element_precipitation[0].text
+	print(" Precipitation:", str(precipitation) + "%")
+
+	hourly_qpf = element_hourly_qpf[0].text
+	print(" Hourly QPF:", hourly_qpf, "in")
+
+	print("------------------------------------------------------------")
+
+	try:
+		conditions_weather_type_1 = element_conditions[0][0].attrib["weather-type"]
+		conditions_coverage_1 = element_conditions[0][0].attrib["coverage"]
+		print(" Conditions:", conditions_weather_type_1, "(" + str(conditions_coverage_1) + ")")
+
+	except IndexError:
+		print(" Conditions: none")
+
+	try:
+		conditions_weather_type_2 = element_conditions[0][1].attrib["weather-type"]
+		conditions_coverage_2 = element_conditions[0][1].attrib["coverage"]
+		print(" Conditions:", conditions_weather_type_2, "(" + str(conditions_coverage_2) + ")")
+
+	except IndexError:
+		print(" Conditions: none")
+
 	print()
-
-	reception_time = obs.get_reception_time(timeformat="date")
-	print("Reception time:", reception_time, "UTC")
-	local_reception_time = reception_time - delta_time
-	print("               ", local_reception_time, "local")
-	print()
-
-	weather = obs.get_weather()
-
-	reference_time = weather.get_reference_time(timeformat="date")
-	print("Reference time:", reference_time, "UTC")
-	local_reference_time = reference_time - delta_time
-	print("               ", local_reference_time, "local")
-	print()
-
-	sunrise_time = weather.get_sunrise_time("date")
-	print("Sunrise:", sunrise_time, "UTC")
-	local_sunrise_time = sunrise_time - delta_time
-	print("        ", local_sunrise_time, "local")
-	print()
-
-	sunset_time = weather.get_sunset_time("date")
-	print("Sunset:", sunset_time, "UTC")
-	local_sunset_time = sunset_time - delta_time
-	print("       ", local_sunset_time, "local")
-	print()
-
-	location = obs.get_location()
-	name = location.get_name()
-	longitude = location.get_lon()
-	latitude = location.get_lat()
-
-	print("City:", name)
-	print("Longitude:", longitude)
-	print("Latitude:", latitude)
-	print()
-
-	status = weather.get_status()
-	detailed_status = weather.get_detailed_status()
-	print("Status:", status)
-	print("Detailed status:", detailed_status)
-
-	clouds = weather.get_clouds()
-	print("Clouds:", clouds, "%")
-
-	rain = weather.get_rain()
-	print("Rain:", rain)
-
-	snow = weather.get_snow()
-	print("Snow:", snow)
-	print()
-
-	temperature_c = weather.get_temperature(unit="celsius")
-	temperature_f = weather.get_temperature(unit="fahrenheit")
-
-	temp_c = temperature_c["temp"]
-	temp_f = temperature_f["temp"]
-
-	temp_max_c = temperature_c["temp_max"]
-	temp_max_f = temperature_f["temp_max"]
-
-	temp_min_c = temperature_c["temp_min"]
-	temp_min_f = temperature_f["temp_min"]
-
-	delta_plus_c = temp_max_c - temp_c
-	delta_plus_f = temp_max_f - temp_f
-
-	delta_minus_c = temp_c - temp_min_c
-	delta_minus_f = temp_f - temp_min_f
-
-	print("Temperature:", temp_c, "( +", "%.2f" % delta_plus_c, "-", "%.2f" % delta_minus_c, ") °C")
-	print("            ", temp_f, "( +", "%.2f" % delta_plus_f, "-", "%.2f" % delta_minus_f, ") °C")
-
-
-	heat_index = weather.get_heat_index()
-	print("Heat index:", heat_index)
-
-	dew_point = weather.get_dewpoint()
-	print("Dew point:", dew_point)
-	print()
-
-	wind = weather.get_wind(unit="meters_sec")
-	print("Wind speed:", "%.2f" % wind["speed"], "m/s")
-	print("Direction:", wind["deg"], "deg")
-	print()
-
-	humidity = weather.get_humidity()
-	print("Humidity:", humidity, "%")
-	print()
-
-	pressure = weather.get_pressure()
-	print("Pressure:", pressure["press"], "hPa")
-	print()
-
-	visibility = weather.get_visibility_distance()
-	print("Visibility:", visibility)
-
-	print()
-	print("+--------------------------------------------------+")
-	print()
-
-	print("Sending UVI query ...")
-	uvi = owm.uvindex_around_coords(latitude, longitude)
-	print("UVI query received!")
-	print()
-
-	uvi_reception_time = uvi.get_reception_time(timeformat="date")
-	print("UVI reception time:", uvi_reception_time, "UTC")
-	print()
-
-	uvi_reference_time = uvi.get_reference_time(timeformat="date")
-	print("UVI reference time:", uvi_reference_time, "UTC")
-	print()
-
-	uvi_value = uvi.get_value()
-	print("UV index:", uvi_value)
-
-	uvi_exposure_risk = uvi.get_exposure_risk()
-
-	reset = attr("reset")
-
-	if uvi_exposure_risk == "green":
-		print("UV exposure risk:", fg("green") + uvi_exposure_risk + reset)
-		print()
-
-	elif uvi_exposure_risk == "yellow":
-		print("UV exposure risk:", fg("yellow") + uvi_exposure_risk + reset)
-		print()
-
-	elif uvi_exposure_risk == "orange":
-		print("UV exposure risk:", fg("orange") + uvi_exposure_risk + reset)
-		print()
-
-	elif uvi_exposure_risk == "red":
-		print("UV exposure risk:", fg("red") + uvi_exposure_risk + reset)
-		print()
-
-	elif uvi_exposure_risk == "extreme":
-		print("UV exposure risk:", fg("violet") + uvi_exposure_risk + reset)
-		print()
-
-	else:
-		print("UV exposure risk:", uvi_exposure_risk)
-		print()
-
-	print("Pausing for one minute ...")
+	print(" Pausing for one minute ...")
 	time.sleep(60)
