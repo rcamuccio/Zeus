@@ -28,7 +28,7 @@ while run == True:
 
 	os.system("clear")
 	print(" CTMO ZEUS Weather System")
-	print(" Current Status")
+	print(" Current Status Monitor")
 	print("------------------------------------------------------------")
 	print(" Querying URL:", url_nws)
 	response_nws = requests.get(url=url_nws)
