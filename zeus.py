@@ -29,10 +29,10 @@ class Zeus:
 
 	def __init__(self):
 
-		self.__access_token = "983794106550931456-dmxCGdMf6ByIJ1EfGaWeCaiDbflEyaT"
-		self.__access_token_secret = "rDqbmGIjcNMkJcByMfBQKxNLlj9rSFbQvM7XuL6QeJBEV"
-		self.__consumer_key = "deHxYH0QFhSmfYQOxhtIDGAHZ"
-		self.__consumer_secret = "XA8vamRvAwrlnV2hYJ4OopbHwKupkQY5Rqx8oCVnKh4Zx5HtFt"
+		self.__access_token = ""
+		self.__access_token_secret = ""
+		self.__consumer_key = ""
+		self.__consumer_secret = ""
 		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=25.9931&lon=-97.5607&FcstType=digitalDWML"
 		self.__url_sunset = "https://api.sunrise-sunset.org/json?lat=25.9931&lng=-97.5607&formatted=0"
 
