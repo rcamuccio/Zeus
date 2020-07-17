@@ -100,7 +100,7 @@ class Zeus:
 		astronomical_twilight_end_datetime = datetime.strptime(astronomical_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		astronomical_twilight_end_datetime_utc = astronomical_twilight_end_datetime.replace(tzinfo=from_zone)
 		astronomical_twilight_end_datetime_local = astronomical_twilight_end_datetime_utc.astimezone(to_zone)
-	
+
 		forecast = self.get_forecast()
 
 		latitude = forecast["latitude"]
@@ -280,17 +280,17 @@ class Zeus:
 				"longitude" : longitude,
 				"area" : element_area_str,
 				"height" : element_height_str,
-				"time" : time_start_list, 
-				"time_jd" : time_start_jd_list, 
-				"dew_point" : dew_point_list, 
-				"heat_index" : heat_index_list, 
-				"wind_speed" : wind_speed_list, 
-				"cloud_amount" : cloud_amount_list, 
-				"prob_of_precip" : prob_of_precip_list, 
-				"humidity" : humidity_list, 
-				"wind_direction" : wind_direction_list, 
-				"temperature" : temperature_list, 
-				"gust" : gust_list, 
+				"time" : time_start_list,
+				"time_jd" : time_start_jd_list,
+				"dew_point" : dew_point_list,
+				"heat_index" : heat_index_list,
+				"wind_speed" : wind_speed_list,
+				"cloud_amount" : cloud_amount_list,
+				"prob_of_precip" : prob_of_precip_list,
+				"humidity" : humidity_list,
+				"wind_direction" : wind_direction_list,
+				"temperature" : temperature_list,
+				"gust" : gust_list,
 				"hourly_qpf" : hourly_qpf_list}
 
 	def get_imaging(self, location):
@@ -391,6 +391,22 @@ if __name__ == "__main__":
 	print()
 	print(" [Forecast projection]")
 	print()
+
+	if len(forecast["time"]) == 168:
+
+		block_hour = "  Hour (CDT)       "
+		i = 0
+
+		while i < len(forecast["time"]):
+
+			hour_str = "↓"+str(datetime.fromisoformat(forecast["time"][i]).hour)
+			padding = " " * (6 - len(hour_str))
+
+			block_hour += hour_str + padding
+
+			i += 6
+
+		print (block_hour)
 
 	color_cloud_amount = "#FFFFFF"
 	block_cloud_amount = "  Cloud amount (%) "
