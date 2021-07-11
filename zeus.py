@@ -5,7 +5,7 @@
 Zeus Weather System
 
 Date: 29 Mar 2020
-Last update: 15 Jul 2020
+Last update: 11 Jul 2021
 
 """
 
@@ -46,6 +46,9 @@ class Zeus:
 
 		from_zone = tz.tzutc()
 		to_zone = tz.tzlocal()
+
+		print(from_zone)
+		print(to_zone)
 
 		print(" Querying URL:", self.__url_sunset)
 		response_sunset = requests.get(url=self.__url_sunset)
