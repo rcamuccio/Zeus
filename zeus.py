@@ -33,8 +33,8 @@ class Zeus:
 		self.__access_token_secret = ""
 		self.__consumer_key = ""
 		self.__consumer_secret = ""
-		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=25.9931&lon=-97.5607&FcstType=digitalDWML"
-		self.__url_time = "https://api.sunrise-sunset.org/json?lat=25.9931&lng=-97.5607&formatted=0"
+		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&FcstType=digitalDWML"
+		self.__url_time = "https://api.sunrise-sunset.org/json?lat=33.5706&lng=-101.8553&formatted=0"
 
 	def get_color_palette(self):
 
@@ -42,7 +42,6 @@ class Zeus:
 
 	def get_forecast(self):
 
-		print(" Querying URL:", self.__url_nws)
 		response_nws = requests.get(url=self.__url_nws)
 		response_nws_status_code = response_nws.status_code
 		response_nws_content_type = response_nws.headers["content-type"]
@@ -52,11 +51,9 @@ class Zeus:
 		root = ET.fromstring(xml_content)
 
 		element_creation_date = root[0][0][0]
-		element_data = root[1]
-		element_point = root[1][0][1]
-		element_area = root[1][0][2]
-		element_height = root[1][0][3]
+
 		element_time_layout = root[1][2]
+
 		element_dew_point = root[1][3][0]
 		element_heat_index = root[1][3][1]
 		element_wind_speed = root[1][3][2]
@@ -70,14 +67,18 @@ class Zeus:
 		element_conditions = root[1][3][10]
 
 		# Location
-		latitude = element_point.attrib["latitude"]
-		latitude = float(latitude)
+		for element in root.iter("point"):
+			latitude = element.attrib["latitude"]
+			longitude = element.attrib["longitude"]
 
-		longitude = element_point.attrib["longitude"]
-		longitude = float(longitude)
+		latitude_float = float(latitude)
+		longitude_float = float(longitude)
 
-		element_area_str = element_area.text
-		element_height_str = element_height.text
+		for element in root.iter("city"):
+			location_str = element.text
+
+		for element in root.iter("height"):
+			element_height_str = element.text
 
 		# Time
 		time_start_list = []
@@ -111,11 +112,13 @@ class Zeus:
 
 		for i in range(0, 168):
 
+			# Dew point list
 			dew_point = element_dew_point[i]
 			dew_point_str = dew_point.text
 			dew_point_int = int(dew_point_str)
 			dew_point_list.append(dew_point_int)
 
+			# Heat index list
 			heat_index = element_heat_index[i]
 			heat_index_str = heat_index.text
 			if heat_index_str == None:
@@ -124,36 +127,43 @@ class Zeus:
 				heat_index_int = int(heat_index_str)
 			heat_index_list.append(heat_index_int)
 
+			# Wind speed list
 			wind_speed = element_wind_speed[i]
 			wind_speed_str = wind_speed.text
 			wind_speed_int = int(wind_speed_str)
 			wind_speed_list.append(wind_speed_int)
 
+			# Cloud amount list
 			cloud_amount = element_cloud_amount[i]
 			cloud_amount_str = cloud_amount.text
 			cloud_amount_int = int(cloud_amount_str)
 			cloud_amount_list.append(cloud_amount_int)
 
+			# Probability of precipitation list
 			prob_of_precip = element_precipitation[i]
 			prob_of_precip_str = prob_of_precip.text
 			prob_of_precip_int = int(prob_of_precip_str)
 			prob_of_precip_list.append(prob_of_precip_int)
 
+			# Humidity list
 			humidity = element_humidity[i]
 			humidity_str = humidity.text
 			humidity_int = int(humidity_str)
 			humidity_list.append(humidity_int)
 
+			# Wind direction list
 			wind_direction = element_wind_direction[i]
 			wind_direction_str = wind_direction.text
 			wind_direction_int = int(wind_direction_str)
 			wind_direction_list.append(wind_direction_int)
 
+			# Temperature list
 			temperature = element_temperature[i]
 			temperature_str = temperature.text
 			temperature_int = int(temperature_str)
 			temperature_list.append(temperature_int)
 
+			# Gust list
 			gust = element_gust[i]
 			gust_str = gust.text
 			if gust_str == None:
@@ -162,6 +172,7 @@ class Zeus:
 				gust_int = int(gust_str)
 			gust_list.append(gust_int)
 
+			# Hourly QPF list
 			hourly_qpf = element_hourly_qpf[i]
 			hourly_qpf_str = hourly_qpf.text
 			if hourly_qpf_str == None:
@@ -170,9 +181,9 @@ class Zeus:
 				hourly_qpf_float = float(hourly_qpf_str)
 			hourly_qpf_list.append(hourly_qpf_float)
 
-		return {"latitude" : latitude,
-				"longitude" : longitude,
-				"area" : element_area_str,
+		return {"latitude" : latitude_float,
+				"longitude" : longitude_float,
+				"location" : location_str,
 				"height" : element_height_str,
 				"time" : time_start_list, 
 				"time_jd" : time_start_jd_list, 
@@ -187,67 +198,73 @@ class Zeus:
 				"gust" : gust_list, 
 				"hourly_qpf" : hourly_qpf_list}
 
+	"""
 	def get_imaging(self, location):
 
 		return
+	"""
 
 	def get_times(self):
 
 		from_zone = tz.tzutc()
 		to_zone = tz.tzlocal()
 
-		print(from_zone)
-		print(to_zone)
-
-		print(" Querying URL:", self.__url_time)
 		response_sunset = requests.get(url=self.__url_time)
-
 		response_sunset_status_code = response_sunset.status_code
-		response_nws_content_type = response_sunset.headers["content-type"]
-		response_nws_encoding = response_sunset.encoding
+		response_sunset_content_type = response_sunset.headers["content-type"]
+		response_sunset_encoding = response_sunset.encoding
 
 		parse_response_sunset = json.loads(response_sunset.text)
 
+		# Begin astronomical twilight
 		astronomical_twilight_begin_str = parse_response_sunset["results"]["astronomical_twilight_begin"]
 		astronomical_twilight_begin_datetime = datetime.strptime(astronomical_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		astronomical_twilight_begin_datetime_utc = astronomical_twilight_begin_datetime.replace(tzinfo=from_zone)
 		astronomical_twilight_begin_datetime_local = astronomical_twilight_begin_datetime_utc.astimezone(to_zone)
 
+		# Begin nautical twilight
 		nautical_twilight_begin_str = parse_response_sunset["results"]["nautical_twilight_begin"]
 		nautical_twilight_begin_datetime = datetime.strptime(nautical_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		nautical_twilight_begin_datetime_utc = nautical_twilight_begin_datetime.replace(tzinfo=from_zone)
 		nautical_twilight_begin_datetime_local = nautical_twilight_begin_datetime_utc.astimezone(to_zone)
 
+		# Begin civil twilight
 		civil_twilight_begin_str = parse_response_sunset["results"]["civil_twilight_begin"]
 		civil_twilight_begin_datetime = datetime.strptime(civil_twilight_begin_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		civil_twilight_begin_datetime_utc = civil_twilight_begin_datetime.replace(tzinfo=from_zone)
 		civil_twilight_begin_datetime_local = civil_twilight_begin_datetime_utc.astimezone(to_zone)
 
+		# Sunrise
 		sunrise_str = parse_response_sunset["results"]["sunrise"]
 		sunrise_datetime = datetime.strptime(sunrise_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		sunrise_datetime_utc = sunrise_datetime.replace(tzinfo=from_zone)
 		sunrise_datetime_local = sunrise_datetime_utc.astimezone(to_zone)
 
+		# Solar noon
 		solar_noon_str = parse_response_sunset["results"]["solar_noon"]
 		solar_noon_datetime = datetime.strptime(solar_noon_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		solar_noon_datetime_utc = solar_noon_datetime.replace(tzinfo=from_zone)
 		solar_noon_datetime_local = solar_noon_datetime_utc.astimezone(to_zone)
 
+		# Sunset
 		sunset_str = parse_response_sunset["results"]["sunset"]
 		sunset_datetime = datetime.strptime(sunset_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		sunset_datetime_utc = sunset_datetime.replace(tzinfo=from_zone)
 		sunset_datetime_local = sunset_datetime_utc.astimezone(to_zone)
 
+		# End civil twilight
 		civil_twilight_end_str = parse_response_sunset["results"]["civil_twilight_end"]
 		civil_twilight_end_datetime = datetime.strptime(civil_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		civil_twilight_end_datetime_utc = civil_twilight_end_datetime.replace(tzinfo=from_zone)
 		civil_twilight_end_datetime_local = civil_twilight_end_datetime_utc.astimezone(to_zone)
 
+		# End nautical twilight
 		nautical_twilight_end_str = parse_response_sunset["results"]["nautical_twilight_end"]
 		nautical_twilight_end_datetime = datetime.strptime(nautical_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		nautical_twilight_end_datetime_utc = nautical_twilight_end_datetime.replace(tzinfo=from_zone)
 		nautical_twilight_end_datetime_local = nautical_twilight_end_datetime_utc.astimezone(to_zone)
 
+		# End astronomical twilight
 		astronomical_twilight_end_str = parse_response_sunset["results"]["astronomical_twilight_end"]
 		astronomical_twilight_end_datetime = datetime.strptime(astronomical_twilight_end_str, "%Y-%m-%dT%H:%M:%S+00:00")
 		astronomical_twilight_end_datetime_utc = astronomical_twilight_end_datetime.replace(tzinfo=from_zone)
@@ -263,6 +280,7 @@ class Zeus:
 				"nautical_twilight_end" : nautical_twilight_end_datetime_local,
 				"astronomical_twilight_end" : astronomical_twilight_end_datetime_local}
 
+	"""
 	def send_tweet(self, message="#ctmosays Hello world!"):
 
 		twitter = Twython(self.__consumer_key, self.__consumer_secret, self.__access_token, self.__access_token_secret)
@@ -271,6 +289,7 @@ class Zeus:
 		print(" Tweeted: %s" % message)
 
 		return
+	"""
 
 if __name__ == "__main__":
 
@@ -278,10 +297,7 @@ if __name__ == "__main__":
 	start_time = time.time()
 
 	zeus = Zeus()
-
-	print(" CTMO ZEUS Weather System v2.0")
-	print()
-
+	print(" ZEUS Weather System v2.0")
 	res = attr("reset")
 
 	times = zeus.get_times()
@@ -299,63 +315,141 @@ if __name__ == "__main__":
 	forecast = zeus.get_forecast()
 
 	latitude = forecast["latitude"]
+
 	longitude = forecast["longitude"]
-	area = forecast["area"]
+
+	location = forecast["location"]
+
 	height = forecast["height"]
+
 	temperature = forecast["temperature"][0]
+
 	dew_point = forecast["dew_point"][0]
+
 	heat_index = forecast["heat_index"][0]
+
 	wind_speed = forecast["wind_speed"][0]
+
+
 	wind_direction = forecast["wind_direction"][0]
+
+	if wind_direction > 10 and wind_direction < 31:
+		cardinal_direction = "NNE"
+
+	elif wind_direction > 30 and wind_direction < 51:
+		cardinal_direction = "NE"
+
+	elif wind_direction > 50 and wind_direction < 71:
+		cardinal_direction = "ENE"
+
+	elif wind_direction > 70 and wind_direction < 101:
+		cardinal_direction = "E"
+
+	elif wind_direction > 100 and wind_direction < 121:
+		cardinal_direction = "ESE"
+
+	elif wind_direction > 120 and wind_direction < 141:
+		cardinal_direction = "SE"
+
+	elif wind_direction > 140 and wind_direction < 161:
+		cardinal_direction = "SSE"
+
+	elif wind_direction > 160 and wind_direction < 191:
+		cardinal_direction = "S"
+
+	elif wind_direction > 190 and wind_direction < 211:
+		cardinal_direction = "SSW"
+
+	elif wind_direction > 210 and wind_direction < 231:
+		cardinal_direction = "SW"
+
+	elif wind_direction > 230 and wind_direction < 251:
+		cardinal_direction = "WSW"
+
+	elif wind_direction > 250 and wind_direction < 281:
+		cardinal_direction = "W"
+
+	elif wind_direction > 280 and wind_direction < 301:
+		cardinal_direction = "WNW"
+
+	elif wind_direction > 300 and wind_direction < 321:
+		cardinal_direcion = "NW"
+
+	elif wind_direction > 320 and wind_direction < 341:
+		cardinal_direction = "NNW"
+
+	elif wind_direction > 340 and wind_direction < 11:
+		cardinal_direction = "N"
+
 	gust = forecast["gust"][0]
+
 	humidity = forecast["humidity"][0]
+
 	cloud_amount = forecast["cloud_amount"][0]
+
 	prob_of_precip = forecast["prob_of_precip"][0]
+
 	hourly_qpf = forecast["hourly_qpf"][0]
 
 	print()
+	print(" [Location]")
+	print()
 
-	print("------------------------------------------------------------")
-
-	print(" Point:", (latitude, longitude), "at", area)
-	print(" Mean sea level:", height, "ft")
-
-	print("------------------------------------------------------------")
-
-	print(" Begin astronomical twilight ", astronomical_twilight_begin, type(astronomical_twilight_begin))
-	print(" Begin nautical twilight     ", nautical_twilight_begin, type(nautical_twilight_begin))
-	print(" Begin civil twilight        ", civil_twilight_begin, type(civil_twilight_begin))
-	print(" Sunrise                     ", sunrise, type(sunrise))
-	print(" Solar noon                  ", solar_noon, type(solar_noon))
-	print(" Sunset                      ", sunset, type(sunset))
-	print(" End civil twilight          ", civil_twilight_end, type(civil_twilight_end))
-	print(" End nautical twilight       ", nautical_twilight_end, type(nautical_twilight_end))
-	print(" End astronomical twilight   ", astronomical_twilight_end, type(astronomical_twilight_end))
-
-	print("------------------------------------------------------------")
-
-	print(" Temperature                 ", temperature, "F", type(temperature))
-	print(" Dew point                   " , dew_point, "F", type(dew_point))
-	print(" Heat index                  ", heat_index, "F", type(heat_index))
-
-	print("------------------------------------------------------------")
-
-	print(" Wind speed                  ", wind_speed, "mph", type(wind_speed))
-	print(" Wind direction              ", wind_direction, "deg", type(wind_direction))
-	print(" Gust                        ", gust, "mph", type(gust))
-
-	print("------------------------------------------------------------")
-
-	print(" Humidity                    ", str(humidity) + "%", type(humidity))
-	print(" Cloud amount                ", str(cloud_amount) + "%", type(cloud_amount))
-	print(" Precipitation               ", str(prob_of_precip) + "%", type(prob_of_precip))
-	print(" Hourly QPF                  ", hourly_qpf, "in", type(hourly_qpf))
-
-	print("------------------------------------------------------------")
+	print("   Point:", (latitude, longitude))
+	print("   Location:", location)
+	print("   Mean sea level:", height, "ft")
 
 	print()
-	print(" [Forecast projection]")
+	print(" [Times]")
 	print()
+
+	print("   Begin astronomical twilight ", astronomical_twilight_begin)
+	print("   Begin nautical twilight     ", nautical_twilight_begin)
+	print("   Begin civil twilight        ", civil_twilight_begin)
+	print("   Sunrise                     ", sunrise)
+	print("   Solar noon                  ", solar_noon)
+	print("   Sunset                      ", sunset)
+	print("   End civil twilight          ", civil_twilight_end)
+	print("   End nautical twilight       ", nautical_twilight_end)
+	print("   End astronomical twilight   ", astronomical_twilight_end)
+
+	print()
+	print(" [Current Weather]")
+	print()
+
+	print("   Temperature                 ", temperature, "F")
+	print("   Dew point                   ", dew_point, "F")
+	print("   Heat index                  ", heat_index, "F")
+
+	print()
+
+	print("   Wind speed                  ", wind_speed, "mph")
+	print("   Wind direction              ", wind_direction, "deg", "("+cardinal_direction+")")
+	print("   Gust                        ", gust, "mph")
+
+	print()
+
+	print("   Humidity                    ", str(humidity) + "%")
+	print("   Cloud amount                ", str(cloud_amount) + "%")
+	print("   Precipitation               ", str(prob_of_precip) + "%")
+	print("   Hourly QPF                  ", hourly_qpf, "in")
+
+	"""
+	print()
+	print(" [Forecast]")
+	print()
+
+	block_hour = "  Hour (CDT)       "
+	i = 0
+
+	while i < 168:
+
+		hour_str = "↓" + str(datetime.fromisoformat(forecast["time"][i]).hour)
+		padding = " " * (6 - len(hour_str))
+		block_hour += hour_str + padding
+		i += 6
+
+	print (block_hour)
 
 	color_cloud_amount = "#FFFFFF"
 	block_cloud_amount = "  Cloud amount (%) "
@@ -482,6 +576,8 @@ if __name__ == "__main__":
 		block_temperature += fg(color_temperature) + u"\u25A0" + res
 
 	print(block_temperature)
+
+	"""
 
 	print()
 
