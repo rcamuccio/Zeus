@@ -5,7 +5,7 @@
 Zeus Weather System
 
 Date: 29 Mar 2020
-Last update: 11 Jul 2021
+Last update: 14 Jul 2021
 
 """
 
@@ -36,9 +36,121 @@ class Zeus:
 		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&FcstType=digitalDWML"
 		self.__url_time = "https://api.sunrise-sunset.org/json?lat=33.5706&lng=-101.8553&formatted=0"
 
-	def get_color_palette(self):
+	def get_color(self, parameter, value):
 
-		return
+		if parameter == "cloud_amount":
+			if value < 10:
+				color = "#003F7F"
+			elif value > 9 and value < 20:
+				color = "#135393"
+			elif value > 19 and value < 30:
+				color = "#2767A7"
+			elif value > 29 and value < 40:
+				color = "#4F8FCF"
+			elif value > 39 and value < 50:
+				color = "#63A3E3"
+			elif value > 49 and value < 60:
+				color = "#77B7F7"
+			elif value > 59 and value < 70:
+				color = "#9ADADA"
+			elif value > 69 and value < 80:
+				color = "#AEEEEE"
+			elif value > 79 and value < 90:
+				color = "#C2C2C2"
+			elif value > 89 and value < 100:
+				color = "#EAEAEA"
+			elif value > 99:
+				color = "#FBFBFB"
+
+		if parameter == "humidity":
+			if value < 25:
+				color = "#08035D"
+			elif value > 24 and value < 31:
+				color = "#0D4D8D"
+			elif value > 30 and value < 36:
+				color = "#3070B0"
+			elif value > 35 and value < 41:
+				color = "#4E8ECE"
+			elif value > 40 and value < 46:
+				color = "#71B1F1"
+			elif value > 45 and value < 51:
+				color = "#80C0C0"
+			elif value > 50 and value < 56:
+				color = "#09FEED"
+			elif value > 55 and value < 61:
+				color = "#55FAAD"
+			elif value > 60 and value < 66:
+				color = "#94FE6A"
+			elif value > 65 and value < 71:
+				color = "#EAFB16"
+			elif value > 70 and value < 76:
+				color = "#FEC600"
+			elif value > 75 and value < 81:
+				color = "#FC8602"
+			elif value > 80 and value < 86:
+				color = "#FE3401"
+			elif value > 85 and value < 91:
+				color = "#EA0000"
+			elif value > 90 and value < 96:
+				color = "#B70000"
+			elif value > 95 and value < 101:
+				color = "#E10000"
+
+		if parameter == "temperature":
+			if value < -40:
+				color = "#FC00FC"
+			elif value > -41 and value < -30:
+				color = "#000085"
+			elif value > -31 and value < -20:
+				color = "#0000B2"
+			elif value > -21 and value < -11:
+				color = "#0000EC"
+			elif value > -12 and value < -2:
+				color = "#0034FE"
+			elif value > -3 and value < 6:
+				color = "#0089FE"
+			elif value > 5 and value < 15:
+				color = "#00D4FE"
+			elif value > 14 and value < 24:
+				color = "#1EFEDE"
+			elif value > 23 and value < 33:
+				color = "#FBFBFB"
+			elif value > 32 and value < 42:
+				color = "#5EFE9E"
+			elif value > 41 and value < 51:
+				color = "#A2FE5A"
+			elif value > 50 and value < 60:
+				color = "#FEDE00"
+			elif value > 59 and value < 69:
+				color = "#FE9E00"
+			elif value > 68 and value < 78:
+				color = "#FE5A00"
+			elif value > 77 and value < 87:
+				color = "#FE1E00"
+			elif value > 86 and value < 96:
+				color = "#E20000"
+			elif value > 95 and value < 105:
+				color = "#A90000"
+			elif value > 104 and value < 114:
+				color = "#7E0000"
+			elif value > 113:
+				color = "#C6C6C6"
+
+		if parameter == "wind_speed":
+			if value < 6:
+				color = "#003F7F"
+			elif value > 5 and value < 12:
+				color = "#2C6CAC"
+			elif value > 11 and value < 17:
+				color = "#63A3E3"
+			elif value > 16 and value < 29:
+				color = "#95D5D5"
+			elif value > 28 and value < 46:
+				color = "#C7C7C7"
+			elif value > 45:
+				color = "#F9F9F9"
+
+		return color
 
 	def get_forecast(self):
 
@@ -198,12 +310,6 @@ class Zeus:
 				"gust" : gust_list, 
 				"hourly_qpf" : hourly_qpf_list}
 
-	"""
-	def get_imaging(self, location):
-
-		return
-	"""
-
 	def get_times(self):
 
 		from_zone = tz.tzutc()
@@ -320,66 +426,10 @@ if __name__ == "__main__":
 	longitude = forecast["longitude"]
 	location = forecast["location"]
 	height = forecast["height"]
-
 	temperature = forecast["temperature"][0]
-	if temperature < -40:
-		color_temperature = "#FC00FC"
-	elif temperature > -41 and temperature < -30:
-		color_temperature = "#000085"
-	elif temperature > -31 and temperature < -20:
-		color_temperature = "#0000B2"
-	elif temperature > -21 and temperature < -11:
-		color_temperature = "#0000EC"
-	elif temperature > -12 and temperature < -2:
-		color_temperature = "#0034FE"
-	elif temperature > -3 and temperature < 6:
-		color_temperature = "#0089FE"
-	elif temperature > 5 and temperature < 15:
-		color_temperature = "#00D4FE"
-	elif temperature > 14 and temperature < 24:
-		color_temperature = "#1EFEDE"
-	elif temperature > 23 and temperature < 33:
-		color_temperature = "#FBFBFB"
-	elif temperature > 32 and temperature < 42:
-		color_temperature = "#5EFE9E"
-	elif temperature > 41 and temperature < 51:
-		color_temperature = "#A2FE5A"
-	elif temperature > 50 and temperature < 60:
-		color_temperature = "#FEDE00"
-	elif temperature > 59 and temperature < 69:
-		color_temperature = "#FE9E00"
-	elif temperature > 68 and temperature < 78:
-		color_temperature = "#FE5A00"
-	elif temperature > 77 and temperature < 87:
-		color_temperature = "#FE1E00"
-	elif temperature > 86 and temperature < 96:
-		color_temperature = "#E20000"
-	elif temperature > 95 and temperature < 105:
-		color_temperature = "#A90000"
-	elif temperature > 104 and temperature < 114:
-		color_temperature = "#7E0000"
-	elif temperature > 113:
-		color_temperature = "#C6C6C6"
-	else:
-		color_temperature = "#FFFFFF"
-	block_temperature = fg(color_temperature) + u"\u25A0" + res
-
 	dew_point = forecast["dew_point"][0]
 	heat_index = forecast["heat_index"][0]
-
 	wind_speed = forecast["wind_speed"][0]
-	if wind_speed < 6:
-		color_wind_speed = "#003F7F"
-	elif wind_speed > 5 and wind_speed < 12:
-		color_wind_speed = "#2C6CAC"
-	elif wind_speed > 11 and wind_speed < 17:
-		color_wind_speed = "#63A3E3"
-	elif wind_speed > 16 and wind_speed < 29:
-		color_wind_speed = "#95D5D5"
-	elif wind_speed > 28 and wind_speed < 46:
-		color_wind_speed = "#C7C7C7"
-	elif wind_speed > 45:
-		color_wind_speed = "#F9F9F9"
 
 	wind_direction = forecast["wind_direction"][0]
 	if wind_direction > 10 and wind_direction < 31:
@@ -416,65 +466,8 @@ if __name__ == "__main__":
 		cardinal_direction = "N"
 
 	gust = forecast["gust"][0]
-
 	humidity = forecast["humidity"][0]
-	if humidity < 25:
-		color_humidity = "#08035D"
-	elif humidity > 24 and humidity < 31:
-		color_humidity = "#0D4D8D"
-	elif humidity > 30 and humidity < 36:
-		color_humidity = "#3070B0"
-	elif humidity > 35 and humidity < 41:
-		color_humidity = "#4E8ECE"
-	elif humidity > 40 and humidity < 46:
-		color_humidity = "#71B1F1"
-	elif humidity > 45 and humidity < 51:
-		color_humidity = "#80C0C0"
-	elif humidity > 50 and humidity < 56:
-		color_humidity = "#09FEED"
-	elif humidity > 55 and humidity < 61:
-		color_humidity = "#55FAAD"
-	elif humidity > 60 and humidity < 66:
-		color_humidity = "#94FE6A"
-	elif humidity > 65 and humidity < 71:
-		color_humidity = "#EAFB16"
-	elif humidity > 70 and humidity < 76:
-		color_humidity = "#FEC600"
-	elif humidity > 75 and humidity < 81:
-		color_humidity = "#FC8602"
-	elif humidity > 80 and humidity < 86:
-		color_humidity = "#FE3401"
-	elif humidity > 85 and humidity < 91:
-		color_humidity = "#EA0000"
-	elif humidity > 90 and humidity < 96:
-		color_humidity = "#B70000"
-	elif humidity > 95 and humidity < 101:
-		color_humidity = "#E10000"
-
 	cloud_amount = forecast["cloud_amount"][0]
-	if cloud_amount < 10:
-		color_cloud_amount = "#003F7F"
-	elif cloud_amount > 9 and cloud_amount < 20:
-		color_cloud_amount = "#135393"
-	elif cloud_amount > 19 and cloud_amount < 30:
-		color_cloud_amount = "#2767A7"
-	elif cloud_amount > 29 and cloud_amount < 40:
-		color_cloud_amount = "#4F8FCF"
-	elif cloud_amount > 39 and cloud_amount < 50:
-		color_cloud_amount = "#63A3E3"
-	elif cloud_amount > 49 and cloud_amount < 60:
-		color_cloud_amount = "#77B7F7"
-	elif cloud_amount > 59 and cloud_amount < 70:
-		color_cloud_amount = "#9ADADA"
-	elif cloud_amount > 69 and cloud_amount < 80:
-		color_cloud_amount = "#AEEEEE"
-	elif cloud_amount > 79 and cloud_amount < 90:
-		color_cloud_amount = "#C2C2C2"
-	elif cloud_amount > 89 and cloud_amount < 100:
-		color_cloud_amount = "#EAEAEA"
-	elif cloud_amount > 99:
-		color_cloud_amount = "#FBFBFB"
-
 	prob_of_precip = forecast["prob_of_precip"][0]
 	hourly_qpf = forecast["hourly_qpf"][0]
 
@@ -484,27 +477,19 @@ if __name__ == "__main__":
 	print()
 	print("\033[1m" + " [Time]" + "\033[0m", time_now.date(), time_now.strftime("%H:%M:%S"))
 	print()
-	print("   [BMAT] ", astronomical_twilight_begin.strftime("%H:%M:%S"))
-	print("   [BMNT] ", nautical_twilight_begin.strftime("%H:%M:%S"))
-	print("   [BMCT] ", civil_twilight_begin.strftime("%H:%M:%S"))
-	print()
-	print("   [Rise] ", sunrise.strftime("%H:%M:%S"))
-	print("   [Noon] ", solar_noon.strftime("%H:%M:%S"))
-	print("   [Set]  ", sunset.strftime("%H:%M:%S"))
-	print()
-	print("   [EECT] ", civil_twilight_end.strftime("%H:%M:%S"))
-	print("   [EENT] ", nautical_twilight_end.strftime("%H:%M:%S"))
-	print("   [EEAT] ", astronomical_twilight_end.strftime("%H:%M:%S"))
+	print("   [BMAT]", astronomical_twilight_begin.strftime("%H:%M:%S"), "| [Rise]", sunrise.strftime("%H:%M:%S"), "| [EECT]", civil_twilight_end.strftime("%H:%M:%S"))
+	print("   [BMNT]", nautical_twilight_begin.strftime("%H:%M:%S"), "| [Noon]", solar_noon.strftime("%H:%M:%S"), "| [EENT]", nautical_twilight_end.strftime("%H:%M:%S"))
+	print("   [BMCT]", civil_twilight_begin.strftime("%H:%M:%S"), "| [Set] ", sunset.strftime("%H:%M:%S"), "| [EEAT]", astronomical_twilight_end.strftime("%H:%M:%S"))
 	print()
 	print("\033[1m" + " [Weather]" + "\033[0m")
 	print()
-	print("   [Temperature]   ", fg(color_temperature) + str(temperature) + " F" + res)
+	print("   [Temperature]   ", temperature, "F")
 	print("   [Dew Point]     ", dew_point, "F")
 	print("   [Heat Index]    ", heat_index, "F")
 	print()
-	print("   [Humidity]      ", fg(color_humidity) + str(humidity) + " %" + res)
-	print("   [Clouds]        ", fg(color_cloud_amount) + str(cloud_amount) + " %" + res)
-	print("   [Wind]          ", fg(color_wind_speed) + cardinal_direction + " " + str(wind_speed) + " mph" + res)
+	print("   [Humidity]      ", humidity, "%")
+	print("   [Clouds]        ", cloud_amount, "%")
+	print("   [Wind]          ", cardinal_direction, wind_speed, "mph")
 	print("   [Gusts]         ", gust, "mph")
 	print()
 	print("   [Precipitation] ", str(prob_of_precip) + "%")
@@ -513,161 +498,70 @@ if __name__ == "__main__":
 	##############################################################################################
 
 	print()
-	print(" [Forecast]")
+	print("\033[1m" + " [Forecast]" + "\033[0m")
 	print()
 
-	block_hour = "  Hour (CDT)       "
+	block_day = 		"   Date (0000 CDT)  "
+	block_hour = 		"                    "
+	block_temperature = "   Temperature (F)  "
+	block_humidity = 	"   Humidity (%)     "
+	block_cloud_amount ="   Clouds (%)       "
+	block_wind_speed = 	"   Wind (mph)       "
 
-	color_temperature = "#FFFFFF"
-	block_temperature = "  Temperature (F)  "
-
-	color_humidity = "#FFFFFF"
-	block_humidity = "  Humidity (%)     "
-
-	color_cloud_amount = "#FFFFFF"
-	block_cloud_amount = "  Clouds (%)       "
-
-	color_wind_speed = "#FFFFFF"
-	block_wind_speed = "  Wind (mph)       "
-
+	days = 5
+	blocks = days * 24
 	i = 0
+	j = 0
 
-	while i < 120:
+	while i < blocks:
 
-		hour_str = "↓" + str(datetime.fromisoformat(forecast["time"][i]).hour)
-		padding = " " * (6 - len(hour_str))
-		block_hour += hour_str + padding
-		i += 6
+		month = datetime.fromisoformat(forecast["time"][i]).month
+		day = datetime.fromisoformat(forecast["time"][i]).day
+		hour = datetime.fromisoformat(forecast["time"][i]).hour
 
-	print(block_hour)
-
-	i = 0
-
-	while i < 120:
-
-		temperature = forecast["temperature"][i]
-		if temperature < -40:
-			color_temperature = "#FC00FC"
-		elif temperature > -41 and temperature < -30:
-			color_temperature = "#000085"
-		elif temperature > -31 and temperature < -20:
-			color_temperature = "#0000B2"
-		elif temperature > -21 and temperature < -11:
-			color_temperature = "#0000EC"
-		elif temperature > -12 and temperature < -2:
-			color_temperature = "#0034FE"
-		elif temperature > -3 and temperature < 6:
-			color_temperature = "#0089FE"
-		elif temperature > 5 and temperature < 15:
-			color_temperature = "#00D4FE"
-		elif temperature > 14 and temperature < 24:
-			color_temperature = "#1EFEDE"
-		elif temperature > 23 and temperature < 33:
-			color_temperature = "#FBFBFB"
-		elif temperature > 32 and temperature < 42:
-			color_temperature = "#5EFE9E"
-		elif temperature > 41 and temperature < 51:
-			color_temperature = "#A2FE5A"
-		elif temperature > 50 and temperature < 60:
-			color_temperature = "#FEDE00"
-		elif temperature > 59 and temperature < 69:
-			color_temperature = "#FE9E00"
-		elif temperature > 68 and temperature < 78:
-			color_temperature = "#FE5A00"
-		elif temperature > 77 and temperature < 87:
-			color_temperature = "#FE1E00"
-		elif temperature > 86 and temperature < 96:
-			color_temperature = "#E20000"
-		elif temperature > 95 and temperature < 105:
-			color_temperature = "#A90000"
-		elif temperature > 104 and temperature < 114:
-			color_temperature = "#7E0000"
-		elif temperature > 113:
-			color_temperature = "#C6C6C6"
+		if hour == 0:
+			hour_str = "↓"
+			block_hour += hour_str
+			block_day += str(month) + "/" + str(day)
+			j = 3
 		else:
-			color_temperature = "#FFFFFF"
+			if j > 0:
+				hour_str = " "
+				block_hour += hour_str
+				block_day += ""
+				j -= 1
+			else:
+				hour_str = " "
+				block_hour += hour_str
+				block_day += " "
+
+		# Build temperature blocks
+		temperature = forecast["temperature"][i]
+		color_temperature = zeus.get_color("temperature", temperature)
 		block_temperature += fg(color_temperature) + u"\u25A0" + res
 
+		# Build humidity blocks
 		humidity = forecast["humidity"][i]
-		if humidity < 25:
-			color_humidity = "#08035D"
-		elif humidity > 24 and humidity < 31:
-			color_humidity = "#0D4D8D"
-		elif humidity > 30 and humidity < 36:
-			color_humidity = "#3070B0"
-		elif humidity > 35 and humidity < 41:
-			color_humidity = "#4E8ECE"
-		elif humidity > 40 and humidity < 46:
-			color_humidity = "#71B1F1"
-		elif humidity > 45 and humidity < 51:
-			color_humidity = "#80C0C0"
-		elif humidity > 50 and humidity < 56:
-			color_humidity = "#09FEED"
-		elif humidity > 55 and humidity < 61:
-			color_humidity = "#55FAAD"
-		elif humidity > 60 and humidity < 66:
-			color_humidity = "#94FE6A"
-		elif humidity > 65 and humidity < 71:
-			color_humidity = "#EAFB16"
-		elif humidity > 70 and humidity < 76:
-			color_humidity = "#FEC600"
-		elif humidity > 75 and humidity < 81:
-			color_humidity = "#FC8602"
-		elif humidity > 80 and humidity < 86:
-			color_humidity = "#FE3401"
-		elif humidity > 85 and humidity < 91:
-			color_humidity = "#EA0000"
-		elif humidity > 90 and humidity < 96:
-			color_humidity = "#B70000"
-		elif humidity > 95 and humidity < 101:
-			color_humidity = "#E10000"
+		color_humidity = zeus.get_color("humidity", humidity)
 		block_humidity += fg(color_humidity) + u"\u25A0" + res
 
-
+		# Build cloud amount blocks
 		cloud_amount = forecast["cloud_amount"][i]
-		if cloud_amount < 10:
-			color_cloud_amount = "#003F7F"
-		elif cloud_amount > 9 and cloud_amount < 20:
-			color_cloud_amount = "#135393"
-		elif cloud_amount > 19 and cloud_amount < 30:
-			color_cloud_amount = "#2767A7"
-		elif cloud_amount > 29 and cloud_amount < 40:
-			color_cloud_amount = "#4F8FCF"
-		elif cloud_amount > 39 and cloud_amount < 50:
-			color_cloud_amount = "#63A3E3"
-		elif cloud_amount > 49 and cloud_amount < 60:
-			color_cloud_amount = "#77B7F7"
-		elif cloud_amount > 59 and cloud_amount < 70:
-			color_cloud_amount = "#9ADADA"
-		elif cloud_amount > 69 and cloud_amount < 80:
-			color_cloud_amount = "#AEEEEE"
-		elif cloud_amount > 79 and cloud_amount < 90:
-			color_cloud_amount = "#C2C2C2"
-		elif cloud_amount > 89 and cloud_amount < 100:
-			color_cloud_amount = "#EAEAEA"
-		elif cloud_amount > 99:
-			color_cloud_amount = "#FBFBFB"
+		color_cloud_amount = zeus.get_color("cloud_amount", cloud_amount)
 		block_cloud_amount += fg(color_cloud_amount) + u"\u25A0" + res
 
+		# Build wind speed blocks
 		wind_speed = forecast["wind_speed"][i]
-		if wind_speed < 6:
-			color_wind_speed = "#003F7F"
-		elif wind_speed > 5 and wind_speed < 12:
-			color_wind_speed = "#2C6CAC"
-		elif wind_speed > 11 and wind_speed < 17:
-			color_wind_speed = "#63A3E3"
-		elif wind_speed > 16 and wind_speed < 29:
-			color_wind_speed = "#95D5D5"
-		elif wind_speed > 28 and wind_speed < 46:
-			color_wind_speed = "#C7C7C7"
-		elif wind_speed > 45:
-			color_wind_speed = "#F9F9F9"
+		color_wind_speed = zeus.get_color("wind_speed", wind_speed)
 		block_wind_speed += fg(color_wind_speed) + u"\u25A0" + res
 
 		i += 1
 
+	print(block_day)
+	print(block_hour)
 	print(block_temperature)
 	print(block_humidity)
+	print()
 	print(block_cloud_amount)
 	print(block_wind_speed)
 	print()
