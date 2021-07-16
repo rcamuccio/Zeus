@@ -19,6 +19,7 @@ import os
 import requests
 import time
 import xml.etree.ElementTree as ET
+
 from astropy.time import Time
 from colored import fg, bg, attr
 from datetime import datetime
@@ -189,6 +190,17 @@ class Zeus:
 
 		return color
 
+	def get_dst_index(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/products/kyoto-dst.json")
+
+		response_text = json.loads(response.text)
+
+		time_tag = response_text[len(response_text) - 1][0]
+		dst = response_text[len(response_text) - 1][1]
+
+		return time_tag, dst
+
 	def get_forecast(self):
 
 		response_nws = requests.get(url=self.__url_nws)
@@ -347,6 +359,66 @@ class Zeus:
 				"gust" : gust_list, 
 				"hourly_qpf" : hourly_qpf_list}
 
+	def get_k_index(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json")
+
+		response_text = json.loads(response.text)
+
+		time_tag = response_text[len(response_text) - 1][0]
+		k_index = response_text[len(response_text) - 1][1]
+
+		return time_tag, k_index
+
+	def get_radio_flux(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/products/10cm-flux-30-day.json")
+
+		response_text = json.loads(response.text)
+
+		time_tag = response_text[len(response_text) - 1][0]
+		flux = response_text[len(response_text) - 1][1]
+
+		return time_tag, flux
+
+	def get_solar_magnetic_field(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/products/solar-wind/mag-5-minute.json")
+
+		response_text = json.loads(response.text)
+
+		time_tag = response_text[len(response_text) - 1][0]
+		b_total = response_text[len(response_text) - 1][6]
+
+		return time_tag, b_total
+
+	def get_solar_wind(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/products/solar-wind/plasma-5-minute.json")
+
+		response_text = json.loads(response.text)
+
+		time_tag = response_text[len(response_text) - 1][0]
+		density = response_text[len(response_text) - 1][1]
+		speed = response_text[len(response_text) - 1][2]
+		temperature = response_text[len(response_text) - 1][3]
+
+		return time_tag, density, speed, temperature
+
+	def get_xray_flux(self):
+
+		response = requests.get(url="https://services.swpc.noaa.gov/json/goes/primary/xray-flares-latest.json")
+
+		response_text = json.loads(response.text)
+
+		current_time = response_text[0]["time_tag"]
+		current_class = response_text[0]["current_class"]
+		max_time = response_text[0]["max_time"]
+		max_class = response_text[0]["max_class"]
+		max_flux = response_text[0]["max_xrlong"]
+
+		return current_time, current_class, max_time, max_class, max_flux
+
 	def get_times(self):
 
 		from_zone = tz.tzutc()
@@ -463,19 +535,52 @@ if __name__ == "__main__":
 	longitude = forecast["longitude"]
 	location = forecast["location"]
 	height = forecast["height"]
+
 	temperature = forecast["temperature"][0]
 	dew_point = forecast["dew_point"][0]
 	heat_index = forecast["heat_index"][0]
-	wind_speed = forecast["wind_speed"][0]
 
+	wind_speed = forecast["wind_speed"][0]
 	wind_direction = forecast["wind_direction"][0]
 	cardinal_direction = zeus.get_cardinal_direction(wind_direction)
-
 	gust = forecast["gust"][0]
+
 	humidity = forecast["humidity"][0]
+
 	cloud_amount = forecast["cloud_amount"][0]
+
 	prob_of_precip = forecast["prob_of_precip"][0]
+
 	hourly_qpf = forecast["hourly_qpf"][0]
+
+	radio_flux = zeus.get_radio_flux()
+	flux_time = radio_flux[0]
+	flux = radio_flux[1]
+
+	b_field = zeus.get_solar_magnetic_field()
+	b_time = b_field[0]
+	b_total = b_field[1]
+
+	solar_wind = zeus.get_solar_wind()
+	solar_wind_time = solar_wind[0]
+	solar_wind_density = solar_wind[1]
+	solar_wind_speed = solar_wind[2]
+	solar_wind_temperature = solar_wind[3]
+
+	kyoto_dst = zeus.get_dst_index()
+	dst_time = kyoto_dst[0]
+	dst = kyoto_dst[1]
+
+	planetary_k = zeus.get_k_index()
+	k_index_time = planetary_k[0]
+	k_index = planetary_k[1]
+
+	xray_flares = zeus.get_xray_flux()
+	xray_current_time = xray_flares[0]
+	xray_current_class = xray_flares[1]
+	xray_max_time = xray_flares[2]
+	xray_max_class = xray_flares[3]
+	xray_max_flux = xray_flares[4]
 
 	print()
 	print("\033[1m" + " [Location]" + "\033[0m", location, (latitude, longitude))
@@ -487,19 +592,19 @@ if __name__ == "__main__":
 	print("   [BMNT]", nautical_twilight_begin.strftime("%H:%M:%S"), "| [Noon]", solar_noon.strftime("%H:%M:%S"), "| [EENT]", nautical_twilight_end.strftime("%H:%M:%S"))
 	print("   [BMCT]", civil_twilight_begin.strftime("%H:%M:%S"), "| [Set] ", sunset.strftime("%H:%M:%S"), "| [EEAT]", astronomical_twilight_end.strftime("%H:%M:%S"))
 	print()
-	print("\033[1m" + " [Weather]" + "\033[0m")
+	print("\033[1m" + " [Weather]" + "\033[0m" + "                      " + "\033[1m" + "[Solar]" + "\033[0m")
 	print()
-	print("   [Temperature]   ", temperature, "F")
-	print("   [Dew Point]     ", dew_point, "F")
-	print("   [Heat Index]    ", heat_index, "F")
+	print("   [Temperature]   ", temperature, "F", "        ", "[Speed]         ", solar_wind_speed, "km/s")
+	print("   [Dew Point]     ", dew_point, "F", "        ", "[Density]       ", solar_wind_density, "protons/cm^3")
+	print("   [Heat Index]    ", heat_index, "F", "        ", "[Temperature]   ", solar_wind_temperature, "K")
 	print()
-	print("   [Humidity]      ", humidity, "%")
-	print("   [Clouds]        ", cloud_amount, "%")
-	print("   [Wind]          ", cardinal_direction, wind_speed, "mph")
-	print("   [Gusts]         ", gust, "mph")
-	print()
-	print("   [Precipitation] ", str(prob_of_precip) + "%")
-	print("   [QPF]           ", hourly_qpf, "in/hr")
+	print("   [Humidity]      ", humidity, "%", "        ", "[F10.7 Flux]    ", flux, "sfu")
+	print("   [Clouds]        ", cloud_amount, "%", "         ", "[B Field]       ", b_total, "nT")
+	print("   [Wind]          ", cardinal_direction, wind_speed, "mph", "   ", "[X-Ray Current] ", xray_current_class)
+	print("   [Gusts]         ", gust, "mph", "       ", "[X-Ray Max]     ", xray_max_class, "("+"{:0.2e}".format(xray_max_flux)+" W/m^2)")
+	print("                                 ", )
+	print("   [Precipitation] ", str(prob_of_precip) + "%", "          ", "[K_p Index]     ", k_index)
+	print("   [QPF]           ", hourly_qpf, "in/hr", "   ", "[DST Index]     ", dst)
 
 	##############################################################################################
 
@@ -572,6 +677,9 @@ if __name__ == "__main__":
 	print(block_wind_speed)
 	print()
 
+	##############################################################################################
+
 	end_time = time.time()
 	total_time = end_time - start_time
 	print(" ZEUS ended after", "%.1f" % total_time, "seconds")
+	print()
