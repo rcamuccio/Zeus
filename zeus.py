@@ -34,7 +34,6 @@ class Zeus:
 		self.__access_token_secret = ""
 		self.__consumer_key = ""
 		self.__consumer_secret = ""
-		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&FcstType=digitalDWML"
 		self.__url_time = "https://api.sunrise-sunset.org/json?lat=33.5706&lng=-101.8553&formatted=0"
 
 	def get_cardinal_direction(self, wind_direction):
@@ -203,12 +202,12 @@ class Zeus:
 
 	def get_forecast(self):
 
-		response_nws = requests.get(url=self.__url_nws)
-		response_nws_status_code = response_nws.status_code
-		response_nws_content_type = response_nws.headers["content-type"]
-		response_nws_encoding = response_nws.encoding
+		response = requests.get(url="https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&FcstType=digitalDWML")
+		response_status_code = response.status_code
+		response_content_type = response.headers["content-type"]
+		response_encoding = response.encoding
 
-		xml_content = response_nws.content
+		xml_content = response.content
 		root = ET.fromstring(xml_content)
 
 		element_creation_date = root[0][0][0]
@@ -342,6 +341,20 @@ class Zeus:
 				hourly_qpf_float = float(hourly_qpf_str)
 			hourly_qpf_list.append(hourly_qpf_float)
 
+		response = requests.get(url="https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&unit=0&lg=english&FcstType=dwml")
+		response_status_code = response.status_code
+		response_content_type = response.headers["content-type"]
+		response_encoding = response.encoding
+
+		xml_content = response.content
+		root = ET.fromstring(xml_content)
+
+		pressure = root[2][3][8][0]
+		pressure_str = pressure.text
+
+		visibility = root[2][3][3][2][0][0]
+		visibility_str = visibility.text
+
 		return {"latitude" : latitude_float,
 				"longitude" : longitude_float,
 				"location" : location_str,
@@ -357,7 +370,9 @@ class Zeus:
 				"wind_direction" : wind_direction_list, 
 				"temperature" : temperature_list, 
 				"gust" : gust_list, 
-				"hourly_qpf" : hourly_qpf_list}
+				"hourly_qpf" : hourly_qpf_list,
+				"pressure" : pressure_str,
+				"visibility" : visibility_str}
 
 	def get_k_index(self):
 
@@ -553,9 +568,13 @@ if __name__ == "__main__":
 
 	hourly_qpf = forecast["hourly_qpf"][0]
 
-	radio_flux = zeus.get_radio_flux()
-	flux_time = radio_flux[0]
-	flux = radio_flux[1]
+	pressure = forecast["pressure"]
+
+	visibility = forecast["visibility"]
+
+	tencm_flux = zeus.get_radio_flux()
+	radio_flux_time = tencm_flux[0]
+	radio_flux = tencm_flux[1]
 
 	b_field = zeus.get_solar_magnetic_field()
 	b_time = b_field[0]
@@ -592,24 +611,41 @@ if __name__ == "__main__":
 	print("   [BMNT]", nautical_twilight_begin.strftime("%H:%M:%S"), "| [Noon]", solar_noon.strftime("%H:%M:%S"), "| [EENT]", nautical_twilight_end.strftime("%H:%M:%S"))
 	print("   [BMCT]", civil_twilight_begin.strftime("%H:%M:%S"), "| [Set] ", sunset.strftime("%H:%M:%S"), "| [EEAT]", astronomical_twilight_end.strftime("%H:%M:%S"))
 	print()
-	print("\033[1m" + " [Weather]" + "\033[0m" + "                      " + "\033[1m" + "[Solar]" + "\033[0m")
+	print("\033[1m" + " [Weather]" + "\033[0m" + " --------------------------------------------")
 	print()
-	print("   [Temperature]   ", temperature, "F", "        ", "[Speed]         ", solar_wind_speed, "km/s")
-	print("   [Dew Point]     ", dew_point, "F", "        ", "[Density]       ", solar_wind_density, "protons/cm^3")
-	print("   [Heat Index]    ", heat_index, "F", "        ", "[Temperature]   ", solar_wind_temperature, "K")
+	print("   [Temperature]   ", temperature, "F")
+	print("   [Heat Index]    ", heat_index, "F")
+	print("   [Dew Point]     ", dew_point, "F")
 	print()
-	print("   [Humidity]      ", humidity, "%", "        ", "[F10.7 Flux]    ", flux, "sfu")
-	print("   [Clouds]        ", cloud_amount, "%", "         ", "[B Field]       ", b_total, "nT")
-	print("   [Wind]          ", cardinal_direction, wind_speed, "mph", "   ", "[X-Ray Current] ", xray_current_class)
-	print("   [Gusts]         ", gust, "mph", "       ", "[X-Ray Max]     ", xray_max_class, "("+"{:0.2e}".format(xray_max_flux)+" W/m^2)")
+	print("   [Humidity]      ", humidity, "%")
+	print("   [Pressure]      ", pressure, "mmHg")
+	print("   [Visibility]    ", visibility, "mi")
+	print()
+	print("   [Clouds]        ", cloud_amount, "%")
+	print("   [Wind]          ", cardinal_direction, wind_speed, "mph")
+	print("   [Gusts]         ", gust, "mph")
 	print("                                 ", )
-	print("   [Precipitation] ", str(prob_of_precip) + "%", "          ", "[K_p Index]     ", k_index)
-	print("   [QPF]           ", hourly_qpf, "in/hr", "   ", "[DST Index]     ", dst)
+	print("   [Precipitation] ", str(prob_of_precip) + "%")
+	print("   [QPF]           ", hourly_qpf, "in/hr")
+	print()
+	print("\033[1m" + " [Solar]" + "\033[0m" + " ----------------------------------------------")
+	print()
+	print("   [Wind Speed]    ", solar_wind_speed, "km/s")
+	print("   [Density]       ", solar_wind_density, "protons/cm^3")
+	print("   [Temperature]   ", solar_wind_temperature, "K")
+	print()
+	print("   [F10.7 Flux]    ", radio_flux, "sfu at")
+	print("   [B Field]       ", b_total, "nT")
+	print()
+	print("   [X-ray Current] ", xray_current_class)
+	print("   [X-ray Max]     ", xray_max_class, " " + "{:0.2e}".format(xray_max_flux) + " W/m^2")
+	print("   [K_p Index]     ", k_index)
+	print("   [DST Index]     ", dst)
 
 	##############################################################################################
 
 	print()
-	print("\033[1m" + " [Forecast]" + "\033[0m")
+	print("\033[1m" + " [Forecast]" + "\033[0m" + " -------------------------------------------")
 	print()
 
 	block_day = 		"   Date (0000 CDT)  "
@@ -631,7 +667,7 @@ if __name__ == "__main__":
 		hour = datetime.fromisoformat(forecast["time"][i]).hour
 
 		if hour == 0:
-			hour_str = "↓"
+			hour_str = "|"
 			block_hour += hour_str
 			block_day += str(month) + "/" + str(day)
 			j = 3
@@ -672,9 +708,10 @@ if __name__ == "__main__":
 	print(block_hour)
 	print(block_temperature)
 	print(block_humidity)
-	print()
+	print(block_hour)
 	print(block_cloud_amount)
 	print(block_wind_speed)
+	print(block_hour)
 	print()
 
 	##############################################################################################
