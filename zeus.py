@@ -5,7 +5,7 @@
 Zeus Weather System
 
 Date: 29 Mar 2020
-Last update: 14 Jul 2021
+Last update: 16 Jul 2021
 
 """
 
@@ -35,6 +35,43 @@ class Zeus:
 		self.__consumer_secret = ""
 		self.__url_nws = "https://forecast.weather.gov/MapClick.php?lat=33.5706&lon=-101.8553&FcstType=digitalDWML"
 		self.__url_time = "https://api.sunrise-sunset.org/json?lat=33.5706&lng=-101.8553&formatted=0"
+
+	def get_cardinal_direction(self, wind_direction):
+
+		if wind_direction > 10 and wind_direction < 31:
+			cardinal_direction = "NNE"
+		elif wind_direction > 30 and wind_direction < 51:
+			cardinal_direction = "NE"
+		elif wind_direction > 50 and wind_direction < 71:
+			cardinal_direction = "ENE"
+		elif wind_direction > 70 and wind_direction < 101:
+			cardinal_direction = "E"
+		elif wind_direction > 100 and wind_direction < 121:
+			cardinal_direction = "ESE"
+		elif wind_direction > 120 and wind_direction < 141:
+			cardinal_direction = "SE"
+		elif wind_direction > 140 and wind_direction < 161:
+			cardinal_direction = "SSE"
+		elif wind_direction > 160 and wind_direction < 191:
+			cardinal_direction = "S"
+		elif wind_direction > 190 and wind_direction < 211:
+			cardinal_direction = "SSW"
+		elif wind_direction > 210 and wind_direction < 231:
+			cardinal_direction = "SW"
+		elif wind_direction > 230 and wind_direction < 251:
+			cardinal_direction = "WSW"
+		elif wind_direction > 250 and wind_direction < 281:
+			cardinal_direction = "W"
+		elif wind_direction > 280 and wind_direction < 301:
+			cardinal_direction = "WNW"
+		elif wind_direction > 300 and wind_direction < 321:
+			cardinal_direcion = "NW"
+		elif wind_direction > 320 and wind_direction < 341:
+			cardinal_direction = "NNW"
+		elif wind_direction > 340 and wind_direction < 11:
+			cardinal_direction = "N"
+
+		return cardinal_direction
 
 	def get_color(self, parameter, value):
 
@@ -432,38 +469,7 @@ if __name__ == "__main__":
 	wind_speed = forecast["wind_speed"][0]
 
 	wind_direction = forecast["wind_direction"][0]
-	if wind_direction > 10 and wind_direction < 31:
-		cardinal_direction = "NNE"
-	elif wind_direction > 30 and wind_direction < 51:
-		cardinal_direction = "NE"
-	elif wind_direction > 50 and wind_direction < 71:
-		cardinal_direction = "ENE"
-	elif wind_direction > 70 and wind_direction < 101:
-		cardinal_direction = "E"
-	elif wind_direction > 100 and wind_direction < 121:
-		cardinal_direction = "ESE"
-	elif wind_direction > 120 and wind_direction < 141:
-		cardinal_direction = "SE"
-	elif wind_direction > 140 and wind_direction < 161:
-		cardinal_direction = "SSE"
-	elif wind_direction > 160 and wind_direction < 191:
-		cardinal_direction = "S"
-	elif wind_direction > 190 and wind_direction < 211:
-		cardinal_direction = "SSW"
-	elif wind_direction > 210 and wind_direction < 231:
-		cardinal_direction = "SW"
-	elif wind_direction > 230 and wind_direction < 251:
-		cardinal_direction = "WSW"
-	elif wind_direction > 250 and wind_direction < 281:
-		cardinal_direction = "W"
-	elif wind_direction > 280 and wind_direction < 301:
-		cardinal_direction = "WNW"
-	elif wind_direction > 300 and wind_direction < 321:
-		cardinal_direcion = "NW"
-	elif wind_direction > 320 and wind_direction < 341:
-		cardinal_direction = "NNW"
-	elif wind_direction > 340 and wind_direction < 11:
-		cardinal_direction = "N"
+	cardinal_direction = zeus.get_cardinal_direction(wind_direction)
 
 	gust = forecast["gust"][0]
 	humidity = forecast["humidity"][0]
